@@ -191,7 +191,7 @@ class Camera:
         return out
 
 def automatic_camera_placement(shapes: List,
-                               resolution: Tuple[int, int]):
+                               resolution: Tuple[int, int], look_at = None, fov = None, up = None):
     """
         Given a list of objects or shapes, generates camera parameters automatically
         using the bounding boxes of the shapes. Place the camera at
@@ -223,11 +223,19 @@ def automatic_camera_placement(shapes: List,
     extents = aabb_max - aabb_min
     max_extents_xy = torch.max(extents[0], extents[1])
     distance = max_extents_xy / (2 * math.tan(45 * 0.5 * math.pi / 180.0))
-    max_extents_xyz = torch.max(extents[2], max_extents_xy)    
+    max_extents_xyz = torch.max(extents[2], max_extents_xy)
+    
+    if look_at is None:
+        look_at = center
+    if fov is None:
+        fov = torch.tensor([45.0])
+    if up is None:
+        up = torch.tensor((0.0, 1.0, 0.0))
+    
     return Camera(position = torch.tensor((center[0], center[1], aabb_min[2] - distance)),
-                  look_at = center,
-                  up = torch.tensor((0.0, 1.0, 0.0)),
-                  fov = torch.tensor([45.0]),
+                  look_at = look_at,
+                  up = up,
+                  fov = fov,
                   clip_near = 0.001 * float(distance),
                   resolution = resolution)
 
